@@ -74,7 +74,6 @@ abstract class AbstractDomainObjectCollectionSpec<T> extends Specification {
         container.addLater(provider)
 
         then:
-        1 * provider.type >> type
         0 * provider._
 
         and:
@@ -196,7 +195,7 @@ abstract class AbstractDomainObjectCollectionSpec<T> extends Specification {
         0 * action._
     }
 
-    def "queries provider for element when registering action for all elements in a collection"() {
+    def "does not query provider for element when registering action for all elements in a collection until element is realized"() {
         def action = Mock(Action)
         def provider1 = Mock(ProviderInternal)
         def provider2 = Mock(ProviderInternal)
@@ -207,19 +206,26 @@ abstract class AbstractDomainObjectCollectionSpec<T> extends Specification {
         container.all(action)
 
         then:
-        1 * action.execute(c)
         _ * provider1.type >> type
-        1 * provider1.get() >> c
         0 * _
 
         when:
         container.addLater(provider2)
 
         then:
-        1 * action.execute(a)
         _ * provider2.type >> type
-        1 * provider2.get() >> a
         0 * _
+
+        when:
+        toList(container)
+
+        then:
+        1 * action.execute(c)
+        1 * provider1.get() >> c
+
+        and:
+        1 * action.execute(a)
+        1 * provider2.get() >> a
     }
 
     def "can get filtered collection containing all objects which have type"() {
@@ -350,7 +356,7 @@ abstract class AbstractDomainObjectCollectionSpec<T> extends Specification {
         0 * action._
     }
 
-    def "provider for element is queried and action executed for filtered collection with matching type"() {
+    def "provider for element is queried and action executed for filtered collection with matching type only when element is realized"() {
         def action = Mock(Action)
         def provider1 = Mock(ProviderInternal)
         def provider2 = Mock(ProviderInternal)
@@ -363,8 +369,6 @@ abstract class AbstractDomainObjectCollectionSpec<T> extends Specification {
 
         then:
         _ * provider1.type >> type
-        1 * provider1.get() >> c
-        1 * action.execute(c)
         0 * _
 
         when:
@@ -372,9 +376,18 @@ abstract class AbstractDomainObjectCollectionSpec<T> extends Specification {
 
         then:
         _ * provider2.type >> type
+        0 * _
+
+        when:
+        toList(container)
+
+        then:
+        1 * provider1.get() >> c
+        1 * action.execute(c)
+
+        and:
         1 * provider2.get() >> a
         1 * action.execute(a)
-        0 * _
     }
 
     def "provider for element is not queried and action executed for filtered collection with non matching type"() {
@@ -427,7 +440,6 @@ abstract class AbstractDomainObjectCollectionSpec<T> extends Specification {
         container.addLater(provider2)
 
         then:
-        1 * provider2.type >> type
         0 * _
 
         when:

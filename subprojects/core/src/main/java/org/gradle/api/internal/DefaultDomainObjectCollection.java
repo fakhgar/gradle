@@ -147,7 +147,9 @@ public class DefaultDomainObjectCollection<T> extends AbstractCollection<T> impl
         // We make best effort not to create an intermediate collection if this container
         // is empty.
         Collection<T> copied = null;
-        for (T t : this) {
+        Iterator<T> iterator = this.iteratorNoFlush();
+        while (iterator.hasNext()) {
+            T t = iterator.next();
             if (copied == null) {
                 copied = Lists.newArrayListWithExpectedSize(estimatedSize());
             }
@@ -187,7 +189,6 @@ public class DefaultDomainObjectCollection<T> extends AbstractCollection<T> impl
     }
 
     public Action<? super T> whenObjectAdded(Action<? super T> action) {
-        store.realizePending(type);
         eventRegister.registerEagerAddAction(type, action);
         return action;
     }
@@ -240,10 +241,6 @@ public class DefaultDomainObjectCollection<T> extends AbstractCollection<T> impl
     public void addLater(Provider<? extends T> provider) {
         assertMutable();
         ProviderInternal<? extends T> providerInternal = Cast.uncheckedCast(provider);
-        if (eventRegister.isSubscribed(providerInternal.getType())) {
-            doAdd(provider.get(), eventRegister.getAddActions());
-            return;
-        }
         store.addPending(providerInternal);
     }
 

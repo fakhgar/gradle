@@ -632,9 +632,10 @@ class DefaultTaskContainerTest extends Specification {
         container.configureEach(action3)
         provider.configure(action4)
         container.configureEach(action5)
+        container.all(action6)
 
         when:
-        container.all(action6)
+        container.iterator()
 
         then:
         1 * taskFactory.create(_ as TaskIdentity) >> task
@@ -990,6 +991,7 @@ class DefaultTaskContainerTest extends Specification {
         when:
         // The following throw an exception immediately because a failing eager configuration rule is registered
         container.register("task", DefaultTask)
+        container.findByName("task")
 
         then:
         def ex = thrown(IllegalStateException)

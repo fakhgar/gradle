@@ -176,7 +176,7 @@ class DeferredTaskDefinitionIntegrationTest extends AbstractIntegrationSpec {
         outputContains("Configure :task2")
     }
 
-    def "task is created and configured eagerly when referenced using withType(type, action)"() {
+    def "task is created and configured only when required using withType(type, action)"() {
         buildFile << '''
             tasks.register("task1", SomeTask) {
                 println "Configure ${path}"
@@ -191,6 +191,18 @@ class DeferredTaskDefinitionIntegrationTest extends AbstractIntegrationSpec {
         '''
 
         when:
+        run("other")
+
+        then:
+        outputDoesNotContain("Create :task1")
+        outputDoesNotContain("Configure :task1")
+        outputDoesNotContain("Matched :task1")
+        result.assertNotOutput("task2")
+
+        when:
+        buildFile << '''
+            other.dependsOn task1
+        '''
         run("other")
 
         then:
@@ -243,7 +255,7 @@ class DeferredTaskDefinitionIntegrationTest extends AbstractIntegrationSpec {
     }
 
     @Issue("https://github.com/gradle/gradle-native/issues/707")
-    def "task is created and configured eagerly when referenced using all { action }"() {
+    def "task is created and configured only once when required using all { action }"() {
         buildFile << """
             def configureCount = 0
             tasks.register("task1", SomeTask) {
@@ -256,15 +268,28 @@ class DeferredTaskDefinitionIntegrationTest extends AbstractIntegrationSpec {
                 tasksAllCount++
                 println "Action " + path + " " + tasksAllCount
             }
-            
+        """
+
+        when:
+        succeeds("help")
+
+        then:
+        result.output.count("Action :help") == 1
+        result.output.count("Create :task1") == 0
+        result.output.count("Configure :task1") == 0
+        result.output.count("Action :task1") == 0
+
+        when:
+        buildFile << """
             gradle.buildFinished {
                 assert configureCount == 1
                 assert tasksAllCount == 2 // help + task1
             }
         """
+        succeeds("help", "task1")
 
-        expect:
-        succeeds("help")
+        then:
+        result.output.count("Action :help") == 1
         result.output.count("Create :task1") == 1
         result.output.count("Configure :task1") == 1
         result.output.count("Action :task1") == 1
