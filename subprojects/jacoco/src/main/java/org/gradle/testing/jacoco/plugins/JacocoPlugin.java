@@ -216,15 +216,11 @@ public class JacocoPlugin implements Plugin<ProjectInternal> {
         project.getPlugins().withType(JavaPlugin.class, new Action<JavaPlugin>() {
             @Override
             public void execute(JavaPlugin javaPlugin) {
-                project.getTasks().withType(Test.class, new Action<Test>() {
-                    @Override
-                    public void execute(Test task) {
-                        if (task.getName().equals(JavaPlugin.TEST_TASK_NAME)) {
-                            addDefaultReportTask(extension, task);
-                            addDefaultCoverageVerificationTask(task);
-                        }
-                    }
-                });
+                Test testTask = (Test) project.getTasks().findByName(JavaPlugin.TEST_TASK_NAME);
+                if (testTask != null) {
+                    addDefaultReportTask(extension, testTask);
+                    addDefaultCoverageVerificationTask(testTask);
+                }
             }
         });
     }
