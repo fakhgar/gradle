@@ -20,6 +20,6 @@ import org.gradle.util.GradleVersion;
 
 import java.util.SortedSet;
 
-public interface GradleVersionProvider {
-    SortedSet<GradleVersion> getRecentlyUsedVersions();
+public interface RecentlyUsedGradleVersions {
+    SortedSet<GradleVersion> getRecentlyUsedGradleVersions();
 }

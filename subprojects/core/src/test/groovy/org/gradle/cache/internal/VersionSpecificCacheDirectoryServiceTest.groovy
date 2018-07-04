@@ -69,7 +69,7 @@ class VersionSpecificCacheDirectoryServiceTest extends Specification {
         cacheBaseDir.createDir("ZZZZ")
 
         when:
-        def versions = versionSpecificCacheDirectoryService.getRecentlyUsedVersions()
+        def versions = versionSpecificCacheDirectoryService.getRecentlyUsedGradleVersions()
 
         then:
         versions as List == [
