@@ -18,7 +18,6 @@ package org.gradle.api.internal.changedetection;
 import com.google.common.collect.ImmutableSortedMap;
 import org.gradle.api.internal.TaskExecutionHistory;
 import org.gradle.api.internal.changedetection.state.FileCollectionSnapshot;
-import org.gradle.api.internal.changedetection.state.mirror.PhysicalSnapshot;
 import org.gradle.api.internal.tasks.OriginTaskExecutionMetadata;
 import org.gradle.api.internal.tasks.TaskExecutionContext;
 import org.gradle.api.internal.tasks.execution.TaskProperties;
@@ -80,7 +79,7 @@ public interface TaskArtifactState {
     /**
      * Returns the current output file content snapshots indexed by property name.
      */
-    Map<String, Iterable<PhysicalSnapshot>> getOutputSnapshots();
+    Map<String, FileCollectionSnapshot> getOutputSnapshots();
 
 
 }
